@@ -1,4 +1,3 @@
-
 import type { StateCreator } from 'zustand';
 import type { AllSlices } from '../useBoundStore';
 import type { Settings } from '../../types';
@@ -7,8 +6,7 @@ export interface SettingsSlice {
   settings: Settings;
   actions: {
     setSettings: (newSettings: Partial<Settings>) => void;
-    setFuelEconomy: (kmPerL: number) => void;
-    setReserveLiters: (liters: number) => void;
+    toggleEcoModeTips: () => void;
   };
 }
 
@@ -17,6 +15,7 @@ const defaultSettings: Settings = {
   tankCapacityL: 15,
   fuelEconomyKmPerL: 25,
   reserveLiters: 3,
+  ecoModeTipsEnabled: false,
 };
 
 export const createSettingsSlice: StateCreator<
@@ -31,13 +30,9 @@ export const createSettingsSlice: StateCreator<
       set((state) => ({
         settings: { ...state.settings, ...newSettings },
       })),
-    setFuelEconomy: (kmPerL) =>
+    toggleEcoModeTips: () =>
       set((state) => ({
-        settings: { ...state.settings, fuelEconomyKmPerL: kmPerL },
-      })),
-    setReserveLiters: (liters) =>
-      set((state) => ({
-        settings: { ...state.settings, reserveLiters: liters },
+        settings: { ...state.settings, ecoModeTipsEnabled: !state.settings.ecoModeTipsEnabled },
       })),
   },
 });

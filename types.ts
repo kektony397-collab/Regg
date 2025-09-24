@@ -1,9 +1,9 @@
-
 export interface Settings {
   bikeModel: string;
   tankCapacityL: number;
   fuelEconomyKmPerL: number;
   reserveLiters: number;
+  ecoModeTipsEnabled: boolean;
 }
 
 export interface RefuelRecord {

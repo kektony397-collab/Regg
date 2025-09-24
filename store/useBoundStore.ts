@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import {
@@ -25,7 +24,7 @@ export const useBoundStore = create<AllSlices>()(
       name: 'smart-bike-store', // Unique name for the storage key
       storage: dexieStorage, // Use our custom Dexie storage adapter
       // The `partialize` option lets us select which parts of the state to persist.
-      // We persist settings and total odometer, but not volatile bike state.
+      // We persist all settings and the total odometer.
       partialize: (state) => ({
         settings: state.settings,
         totalOdometerKm: state.totalOdometerKm,
