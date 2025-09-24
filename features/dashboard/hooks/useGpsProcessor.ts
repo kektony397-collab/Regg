@@ -10,21 +10,29 @@ import type { GpsPosition } from '../../../types';
 // smooths it with a Kalman filter, calculates distance, and updates the global state.
 const useGpsProcessor = () => {
   const { position, isAvailable: isGpsHardwareAvailable } = useGeolocation();
-  const { setGpsStatus, updatePosition } = useBoundStore(
-    (state) => state.actions,
-  );
+  
+  // Use granular selectors for state actions. This is a best practice that can prevent
+  // re-renders if other parts of the store change.
+  const setGpsStatus = useBoundStore((state) => state.actions.setGpsStatus);
+  const updatePosition = useBoundStore((state) => state.actions.updatePosition);
 
   const kalmanFilter = useRef<KalmanFilter | null>(null);
   const lastPosition = useRef<GpsPosition | null>(null);
 
+  // By combining the two previous useEffects into one, we create a single, stable
+  // data processing pipeline that runs whenever the position changes. This avoids
+  // chained re-renders and resolves the flickering issue.
   useEffect(() => {
+    // Part 1: Update the global GPS status.
     setGpsStatus(isGpsHardwareAvailable && !!position);
-  }, [isGpsHardwareAvailable, position, setGpsStatus]);
 
-  useEffect(() => {
-    if (!position) return;
+    // Part 2: Process the new position data.
+    // If there's no position, we can't do anything else.
+    if (!position) {
+      return;
+    }
 
-    // Initialize the Kalman filter on the first valid position
+    // Initialize the Kalman filter on the first valid position.
     if (!kalmanFilter.current) {
       kalmanFilter.current = new KalmanFilter({
         observation: 2, // We are observing 2 dimensions: [latitude, longitude]
@@ -32,7 +40,7 @@ const useGpsProcessor = () => {
       });
     }
 
-    // Predict the next state and get the corrected (smoothed) state
+    // Predict the next state and get the corrected (smoothed) state.
     const smoothedCoords = kalmanFilter.current.filter({
       previousCorrected: null, // Let the filter manage its own state
       observation: [position.latitude, position.longitude],
@@ -58,16 +66,16 @@ const useGpsProcessor = () => {
       );
     }
 
-    // Convert speed from m/s to km/h
+    // Convert speed from m/s to km/h.
     const speedKph = (position.speed || 0) * 3.6;
 
-    // Update the global store with the processed data
+    // Update the global store with the processed data.
     updatePosition(speedKph, distanceDeltaKm);
 
-    // Store the current smoothed position for the next calculation
+    // Store the current smoothed position for the next calculation.
     lastPosition.current = smoothedPosition;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [position, updatePosition]);
+
+  }, [position, isGpsHardwareAvailable, setGpsStatus, updatePosition]); // Dependencies are now comprehensive and stable.
 
   return null; // This hook does not return anything, it only produces side effects.
 };
