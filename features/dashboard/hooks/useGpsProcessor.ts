@@ -1,6 +1,6 @@
 
 import { useEffect, useRef } from 'react';
-import { KalmanFilter } from 'kalman-filter';
+import KalmanFilter from 'kalman-filter';
 import { useBoundStore } from '../../../store/useBoundStore';
 import useGeolocation from './useGeolocation';
 import { haversineDistance } from '../../../lib/haversine';
@@ -10,7 +10,7 @@ import type { GpsPosition } from '../../../types';
 // smooths it with a Kalman filter, calculates distance, and updates the global state.
 const useGpsProcessor = () => {
   const { position, isAvailable: isGpsHardwareAvailable } = useGeolocation();
-  
+
   // Use granular selectors for state actions. This is a best practice that can prevent
   // re-renders if other parts of the store change.
   const setGpsStatus = useBoundStore((state) => state.actions.setGpsStatus);
@@ -74,7 +74,6 @@ const useGpsProcessor = () => {
 
     // Store the current smoothed position for the next calculation.
     lastPosition.current = smoothedPosition;
-
   }, [position, isGpsHardwareAvailable, setGpsStatus, updatePosition]); // Dependencies are now comprehensive and stable.
 
   return null; // This hook does not return anything, it only produces side effects.
